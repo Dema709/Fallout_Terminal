@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "../Common/QTextTableWidget.h"
 #include <QSet>
+#include <QList>//deque
 
 struct Word {
     QString word;
@@ -36,7 +37,8 @@ private:
     void findHints(QString & hackingSymbols);
     QString generateHackingSymbols();
     QVector<QVector<QString>> generateHackingIndexes();
-    void tuneTextTableWidget();//Первоначальная настройка
+    void tuneTextTableWidget(); //Первоначальная настройка таблицы
+    void newGame();             //Заполнение таблицы, подсказок (и др.) и сброс попыток
     void tuneAnotherTableWidget(bool isTopWidget);//top, right widget
     std::pair<int,int> numV(int numInString);
     int numS(int row, int column);
@@ -46,6 +48,8 @@ private:
     void wordPressed(int index, bool callFromHint);
     void hintPressed(int index);
     void setAttemptsCount(int attempts);
+    void addStringToRightRows(QString s);
+    void clearRightRows();
 
     int rowsCount = 17;
     int columnsCount = 2;
@@ -53,12 +57,16 @@ private:
     int wordsCount = 4*4;
     int wordsSize = 6;
     int attemptsLeft, maxAttempts = 4;
+    int rightRowSize = 16;//С учётом '>'; Количество символов в строке правого ряда
+    int topRowsCount = 5;//Количество рядов в верхнем заголовке
+    int symbolsInIndex = 0;//Длина строки вида 0x1234. Устанавливается при генерации
     QTextTableWidget * textTableWidget;
     QTextTableWidget * topTextTableWidget;
     QTextTableWidget * rightTextTableWidget;
     QVector<Word> words;
     QVector<Hint> hints;
-    SelectedCells selectedCells;
+    //SelectedCells selectedCells;
+    QList<QString> rightRows;//Или же std::deque
     /*
     //https://fallout.fandom.com/ru/wiki/Взлом_терминала
     //Уровень защиты Терминала

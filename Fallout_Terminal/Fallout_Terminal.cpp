@@ -18,14 +18,17 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     QGridLayout * mainLayout = new QGridLayout(this);
     textTableWidget = new QTextTableWidget();
     tuneTextTableWidget();
+    newGame();
     mainLayout->addWidget(textTableWidget, 1, 0);
-
+/*
     connect(textTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
     connect(textTableWidget, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(currentCellChanged(int, int, int, int)));
     connect(textTableWidget, SIGNAL(cellClicked(int, int)), this, SLOT(cellClicked(int, int)));
     connect(textTableWidget, SIGNAL(cellEntered(int, int)), this, SLOT(cellEntered(int, int)));
     connect(textTableWidget, SIGNAL(cellPressed(int, int)), this, SLOT(cellPressed(int, int)));
+*/
 
+    /*
     topTextTableWidget = new QTextTableWidget();
     mainLayout->addWidget(topTextTableWidget, 0, 0, 1, 2);
 
@@ -35,7 +38,7 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     //Заглушка для верхней и правой полос
     tuneAnotherTableWidget(false);//right
     tuneAnotherTableWidget(true);//top
-
+    */
 }
 
 Fallout_Terminal::~Fallout_Terminal(){
@@ -69,6 +72,17 @@ QVector<QString> Fallout_Terminal::getWordsFromDictionary(){
                 break;
         }
     }
+
+    //temp!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    /*QVector<QString> wordsVector;
+    for (int i=0; i<wordsCount; i++){
+        QString s;
+        for (int j=0; j<wordsSize; j++){
+            s.push_back("T");
+        }
+        wordsVector.push_back(s);
+    }*/
+
     return wordsVector;
 }
 
@@ -235,10 +249,11 @@ QVector<QVector<QString>> Fallout_Terminal::generateHackingIndexes(){
     for (int col=0; col<columnsCount; col++){
         QVector<QString> total_column; total_column.reserve(rowsCount);
         for (int row=0; row<rowsCount; row++){
-            QString indString = "0x"+QString("%1").arg(start_index, 4, 16, QChar('0')).toUpper();
-            indString += ' ';
-            if (col!=0) indString = ' ' + indString;
-            total_column.push_back(indString);
+            //QString indString = "0x"+QString("%1").arg(start_index, 4, 16, QChar('0')).toUpper();
+            //indString += ' ';
+            //if (col!=0) indString = ' ' + indString;
+            //total_column.push_back(indString);
+            total_column.push_back("0x"+QString("%1").arg(start_index, 4, 16, QChar('0')).toUpper());
             start_index += symbolsInRow;
         }
         answer.push_back(std::move(total_column));
@@ -246,41 +261,43 @@ QVector<QVector<QString>> Fallout_Terminal::generateHackingIndexes(){
     //qDebug()<<"0x"+QString::number(start_index, 16).toUpper();//to smth like "0x0CB8"
     //qDebug()<<QString("0x%1").arg(start_index, 4, 16, QChar('0'));//to smth like "0x0cb8"
 
+    if (!answer.empty() && !answer[0].empty())
+        symbolsInIndex = answer[0][0].size();
+
     return answer;
 }
 
 void Fallout_Terminal::tuneTextTableWidget(){
+
     QFont font("Consolas", 20);
-    //Agenda Medium Ultra Condensed
     //QFont font("Consolas", 10, QFont::Monospace);
     font.setBold(true);
     textTableWidget->setFont(font);
+
+
+    //font.setPixelSize(20);//Для работы с разными разрешениями?
+    //QDesktopWidget *d = QApplication::desktop();
+    //qDebug()<<d->width()<<d->height();//Разрешение экрана
+
+
     //Qt::ItemFlag flag = (Qt::ItemFlag)((uint32_t)Qt::ItemIsEditable | (uint32_t)Qt::ItemIsEnabled);
     textTableWidget->setFlag(Qt::ItemIsEditable);
     textTableWidget->setAlignment(Qt::AlignCenter);
 
-    auto ans = generateHackingIndexes();
+    auto hackingIndexes = generateHackingIndexes();
 
-    for (int i=0; i<ans.size(); i++){
-        for (int j=0; j<ans[0].size(); j++){
-            textTableWidget->setText(j,i*(1+symbolsInRow),ans[i][j]);
+    textTableWidget->horizontalHeader()->setMaximumSectionSize(15);
+    textTableWidget->verticalHeader()  ->setMaximumSectionSize(28);
+    //textTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);//Сильно замедляет заполнение
+    //textTableWidget->verticalHeader()  ->setSectionResizeMode(QHeaderView::ResizeToContents);//Без этого не уменьшалось
+
+    for (int row=0; row<rowsCount+5; row++){
+        for (int col=0; col<rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2); col++){
+            textTableWidget->setText(row, col, " ");
+            //textTableWidget->horizontalHeader()->setDefaultSectionSize(1);
+            //textTableWidget->item(row, col);
         }
     }
-
-    auto ans2 = generateHackingSymbols();
-
-    for (int i=0; i<columnsCount; i++){
-        for (int j=0; j<rowsCount; j++){
-            for (int k=0; k<symbolsInRow; k++){
-                textTableWidget->setText(j,i*(1+symbolsInRow)+k+1,
-                                         QString(ans2[i*symbolsInRow*rowsCount +
-                                                      j*symbolsInRow +
-                                                      k]));
-            }
-        }
-    }
-
-    this->setAttemptsCount(maxAttempts);
 
     textTableWidget->horizontalHeader()->hide();
     textTableWidget->verticalHeader()->hide();
@@ -297,6 +314,49 @@ void Fallout_Terminal::tuneTextTableWidget(){
                                   textTableWidget->verticalHeader()->length() + delta);
 
     textTableWidget->setMouseTracking(true);//[signal] void QTableWidget::cellEntered(int row, int column)
+}
+
+void Fallout_Terminal::newGame(){
+    //top
+    {
+        QString topString = "ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL";
+        int row = 0;
+        for (int column=0; column<topString.size(); column++){
+            textTableWidget->setText(row, column, QString(topString[column]));
+        }
+    }
+    {
+        QString topString = "ВВЕДИТЕ ПАРОЛЬ";
+        int row = 1;
+        for (int column=0; column<topString.size(); column++){
+            textTableWidget->setText(row, column, QString(topString[column]));
+        }
+    }
+    //Мигающее сообщение на второй строке обновляется функцией showWarning(bool)
+    //Надпись "ВВЕДИТЕ ПАРОЛЬ" убирается после первой попытки ввода (?)
+    //"# ПОПЫТОК ОСТАЛОСЬ: ▮▮▮▮" - в функции setAttemptsCount(int)
+
+    //right
+    clearRightRows();
+
+    auto hackingIndexes = generateHackingIndexes();
+
+    for (int i=0; i<hackingIndexes.size(); i++){//section
+        for (int j=0; j<hackingIndexes[0].size(); j++){//row in section
+            for (int k=0; k<hackingIndexes[0][0].size(); k++){//num in index
+                textTableWidget->setText(j+topRowsCount, i*(symbolsInRow+symbolsInIndex+2)+k, QString(hackingIndexes[i][j][k]));
+            }
+            //textTableWidget->setText(j,i*(1+symbolsInRow),ans[i][j]);
+        }
+    }
+    //qDebug()<<"newGame 3";
+    QString hackingSymbols = generateHackingSymbols();
+    for (int i=0; i<hackingSymbols.size(); i++){
+        auto pair = numV(i);
+        textTableWidget->setText(pair.first, pair.second, QString(hackingSymbols[i]));
+    }
+
+    this->setAttemptsCount(maxAttempts);
 }
 
 void Fallout_Terminal::tuneAnotherTableWidget(bool isTopWidget){
@@ -350,8 +410,10 @@ void Fallout_Terminal::tuneAnotherTableWidget(bool isTopWidget){
 std::pair<int,int> Fallout_Terminal::numV(int numInString){
     int section = numInString / (rowsCount * symbolsInRow);
     int numInSection = numInString % (rowsCount * symbolsInRow);
-    int row = numInSection / symbolsInRow;
-    int column = section * (symbolsInRow+1) + numInSection % symbolsInRow + 1;
+    int row = numInSection / symbolsInRow + topRowsCount;
+    int column = (section+1) * (symbolsInIndex+2) - 1 +//+2 за счёт пробела
+            (section)*symbolsInRow +
+            numInSection % symbolsInRow;
     return {row, column};
 }
 
@@ -399,7 +461,7 @@ void Fallout_Terminal::wordPressed(int index, bool callFromHint = false){
         qDebug()<<"Answer found";
 
         QMessageBox::information(this, "Hacked ;)", "Answer found");
-        tuneTextTableWidget();
+        newGame();//tuneTextTableWidget();
 
         return;
     }
@@ -457,18 +519,50 @@ void Fallout_Terminal::setAttemptsCount(int attempts){
     qDebug()<<"changeAttemptsCount"<<attemptsLeft<<"->"<<attempts;
     attemptsLeft = attempts;
 
+    {
+        QString topString;
+        topString.setNum(attemptsLeft);
+        topString += " ПОПЫТОК ОСТАЛОСЬ: ";
+        for (int i=0; i<attemptsLeft; i++){
+            topString += "▮";
+        }
+        int row = 3;
+        for (int column=0; column<rightRowSize + columnsCount*(symbolsInRow+symbolsInIndex+2); column++){
+            if (column<topString.size())
+                textTableWidget->setText(row, column, QString(topString[column]));
+            else
+                textTableWidget->setText(row, column, " ");
+        }
+    }
+
+    //Как вариант - изменять падежи слова "ПОПЫТОК". В оригинале - не меняется
+
+    /*
     //temp
     QString titleString = "Терминал Fallout ";
     for (int i=0; i<attemptsLeft; i++){
         titleString += "▮";
     }
     setWindowTitle(titleString);//Название окна
+    */
 
     if (attemptsLeft <= 0){
         qDebug()<<"You lose";
         QMessageBox::information(this, "Oh no!", "Terminal blocked");
         //this->close();
-        tuneTextTableWidget();
+        newGame();//tuneTextTableWidget();
+    }
+}
+
+void Fallout_Terminal::addStringToRightRows(QString s){
+
+}
+void Fallout_Terminal::clearRightRows(){
+    rightRows.clear();
+    for (int i=0; i<rowsCount; i++){//row
+        for (int j=0; j<rightRowSize; j++){//column
+            textTableWidget->setText(i+topRowsCount, j+columnsCount*(symbolsInRow+symbolsInIndex+2), " ");
+        }
     }
 }
 
