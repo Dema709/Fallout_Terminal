@@ -20,13 +20,13 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     tuneTextTableWidget();
     newGame();
     mainLayout->addWidget(textTableWidget, 1, 0);
-/*
+
     connect(textTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
     connect(textTableWidget, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(currentCellChanged(int, int, int, int)));
     connect(textTableWidget, SIGNAL(cellClicked(int, int)), this, SLOT(cellClicked(int, int)));
     connect(textTableWidget, SIGNAL(cellEntered(int, int)), this, SLOT(cellEntered(int, int)));
     connect(textTableWidget, SIGNAL(cellPressed(int, int)), this, SLOT(cellPressed(int, int)));
-*/
+
 
     /*
     topTextTableWidget = new QTextTableWidget();
@@ -428,10 +428,10 @@ std::pair<int,int> Fallout_Terminal::numV(int numInString){
 
 int Fallout_Terminal::numS(int row, int column){
     int answer = 0;
-    int section = column/(symbolsInRow+1);
+    int section = column/(symbolsInRow+symbolsInIndex+2);
     answer += section*symbolsInRow*rowsCount;
-    answer += row*symbolsInRow;
-    answer += column - section*(symbolsInRow+1)-1;
+    answer += (row - topRowsCount)*symbolsInRow;
+    answer += column - section*(symbolsInRow+symbolsInIndex+2) - 1 - symbolsInIndex;
     return answer;
 }
 
@@ -642,6 +642,11 @@ void Fallout_Terminal::cellClicked(int row, int column){
     setAttemptsCount(attemptsLeft-1);
 }
 void Fallout_Terminal::cellEntered(int row, int column){
+    /*qDebug()<<"cellEntered"<<row<<column<<numS(row, column);
+    auto pair = numV(numS(row, column));
+    qDebug()<<pair.first<<pair.second;
+    return;*/
+
     //Убираем выделение
     for (int i=0; i<columnsCount*(symbolsInRow+1); i++){
         for (int j=0; j<rowsCount; j++){
