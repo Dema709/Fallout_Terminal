@@ -45,6 +45,8 @@ private:
     int isWord(int numInString);//returns wordNum or -1
     int isHint(int numInString);//returns hintNum or -1
 
+    int sameCharsAsAnswer(QString s);
+
     void wordPressed(int index, bool callFromHint);
     void hintPressed(int index);
     void setAttemptsCount(int attempts);
