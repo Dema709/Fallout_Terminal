@@ -40,7 +40,6 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     tuneAnotherTableWidget(true);//top
     */
 
-
 }
 
 Fallout_Terminal::~Fallout_Terminal(){
@@ -335,12 +334,16 @@ void Fallout_Terminal::newGame(){
     {
         QString topString = "ВВЕДИТЕ ПАРОЛЬ";
         int row = 1;
-        for (int column=0; column<topString.size(); column++){
+        int column;
+        for (column=0; column<topString.size(); column++){
             textTableWidget->setText(row, column, QString(topString[column]));
+        }
+        for (; column<textTableWidget->columnCount(); column++){
+            textTableWidget->setText(row, column, " ");
         }
     }
     //Мигающее сообщение на второй строке обновляется функцией showWarning(bool)
-    //Надпись "ВВЕДИТЕ ПАРОЛЬ" убирается после первой попытки ввода (?)
+    //Надпись "ВВЕДИТЕ ПАРОЛЬ" убирается после первой попытки ввода (?) - нет
     //"# ПОПЫТОК ОСТАЛОСЬ: ▮▮▮▮" - в функции setAttemptsCount(int)
 
     //right
@@ -477,6 +480,21 @@ int Fallout_Terminal::sameCharsAsAnswer(QString s){
     //Только если вдруг секретного слова-ответа не будет
 }
 
+void Fallout_Terminal::showWarning(bool warningEnabled){
+    int row = 1;
+    if (!warningEnabled){
+        QString topString = "ВВЕДИТЕ ПАРОЛЬ";
+        for (int column=0; column<textTableWidget->columnCount(); column++){
+            textTableWidget->setText(row, column, " ");
+        }
+    } else {
+        QString topString = "!!! ПРЕДУПРЕЖДЕНИЕ: ТЕРМИНАЛ МОЖЕТ БЫТЬ ЗАБЛОКИРОВАН !!!";
+        for (int column=0; column<textTableWidget->columnCount(); column++){
+            textTableWidget->setText(row, column, QString(topString[column]));
+        }
+    }
+}
+
 void Fallout_Terminal::wordPressed(int index, bool callFromHint = false){
     //При неправильно выбранном слове отнимается 1 попытка
     //Если слово убирается не от нажатия подсказки
@@ -599,7 +617,7 @@ void Fallout_Terminal::setAttemptsCount(int attempts){
     {
         QString topString;
         topString.setNum(attemptsLeft);
-        topString += " ПОПЫТОК ОСТАЛОСЬ: ";
+        topString += " ПОПЫТКИ ОСТАЛОСЬ: ";
         for (int i=0; i<attemptsLeft; i++){
             topString += "▮";
         }
@@ -612,7 +630,10 @@ void Fallout_Terminal::setAttemptsCount(int attempts){
         }
     }
 
-    //Как вариант - изменять падежи слова "ПОПЫТОК". В оригинале - не меняется
+    if (attemptsLeft == 1) showWarning(1);
+    //if (attemptsLeft == maxAttempts) showWarning(0);
+
+    //Как вариант - изменять падежи слова "ПОПЫТКИ". В оригинале - не меняется
 
     /*
     //temp
@@ -622,8 +643,6 @@ void Fallout_Terminal::setAttemptsCount(int attempts){
     }
     setWindowTitle(titleString);//Название окна
     */
-
-
 }
 
 void Fallout_Terminal::addStringToRightRows(QString s){

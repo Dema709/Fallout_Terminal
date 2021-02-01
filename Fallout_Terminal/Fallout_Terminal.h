@@ -46,6 +46,7 @@ private:
     int isHint(int numInString);//returns hintNum or -1
 
     int sameCharsAsAnswer(QString s);
+    void showWarning(bool warningEnabled);
 
     void wordPressed(int index, bool callFromHint);
     void hintPressed(int index);
