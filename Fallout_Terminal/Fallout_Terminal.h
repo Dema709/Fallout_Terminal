@@ -49,6 +49,7 @@ private:
     void hintPressed(int index);
     void setAttemptsCount(int attempts);
     void addStringToRightRows(QString s);
+    void changeSelectedStringInRightRows(QString s);
     void clearRightRows();
 
     int rowsCount = 17;

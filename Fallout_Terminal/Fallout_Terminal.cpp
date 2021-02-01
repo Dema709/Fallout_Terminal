@@ -39,6 +39,15 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     tuneAnotherTableWidget(false);//right
     tuneAnotherTableWidget(true);//top
     */
+
+
+    addStringToRightRows("1");
+    addStringToRightRows("12345678901234567sr");
+    addStringToRightRows("12345");
+
+    changeSelectedStringInRightRows("5432133333333376");
+    changeSelectedStringInRightRows("s");
+    //changeSelectedStringInRightRows("");
 }
 
 Fallout_Terminal::~Fallout_Terminal(){
@@ -555,8 +564,46 @@ void Fallout_Terminal::setAttemptsCount(int attempts){
 }
 
 void Fallout_Terminal::addStringToRightRows(QString s){
+    int addedRowsCount = ceil(s.size() / (rightRowSize-1.));
+    //qDebug()<<"addStringToRightRows"<<rightRowSize<<s.size()<<addedRowsCount;
+    for (int i=0; i<addedRowsCount; i++){
+        rightRows.push_back('>'+s.mid(i*(rightRowSize-1), (rightRowSize-1.)));
+    }
+    while (rightRows.size()>rowsCount-2){
+        rightRows.pop_front();//removeFirst() или removeAt(0) - тоже вариант
+    }
+    //qDebug()<<rightRows;
 
+    //Заполнение ячеек
+    for (int i=0; i<rightRows.size(); i++){
+        //Строка rightRows[rightRows.size()-1-i] занимает строку rowsCount-3-i
+        int j;
+        for (j=0; j<rightRows[rightRows.size()-1-i].size(); j++){
+            textTableWidget->setText(topRowsCount + rowsCount-3-i, j+columnsCount*(symbolsInRow+symbolsInIndex+2),
+                                     QString(rightRows[rightRows.size()-1-i][j]));
+        }
+        for (; j<rightRowSize; j++){
+            textTableWidget->setText(topRowsCount + rowsCount-3-i, j+columnsCount*(symbolsInRow+symbolsInIndex+2),
+                                     " ");
+        }
+    }
 }
+
+void Fallout_Terminal::changeSelectedStringInRightRows(QString s){
+    //Выбранная сейчас строчка под курсором, а именно та её часть, что влезает в одну строку
+    textTableWidget->setText(topRowsCount + rowsCount-1, columnsCount*(symbolsInRow+symbolsInIndex+2),
+                             ">");
+    int i;
+    for (i=0; i<std::min(s.size(), rightRowSize-1); i++){
+        textTableWidget->setText(topRowsCount + rowsCount-1, 1+i+columnsCount*(symbolsInRow+symbolsInIndex+2),
+                                 QString(s[i]));
+    }
+    for (; i<rightRowSize-1; i++){
+        textTableWidget->setText(topRowsCount + rowsCount-1, 1+i+columnsCount*(symbolsInRow+symbolsInIndex+2),
+                                 " ");
+    }
+}
+
 void Fallout_Terminal::clearRightRows(){
     rightRows.clear();
     for (int i=0; i<rowsCount; i++){//row
