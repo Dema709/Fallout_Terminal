@@ -15,12 +15,16 @@ public:
     void setAlignment(uint16_t alignment);//Для заполняемых ячеек (не для всех)
     void setFont(QFont font);//Для заполняемых ячеек (не для всех)
     void setFlag(Qt::ItemFlag flag);//Для новых ячеек; отключает этот флаг
+    void setBackground(QColor color);
+    void setForeground(QColor color);
 private:
     uint16_t alignment;
     bool alignmentIsSet = false;
     QFont font;
     bool fontIsSet = false;
     Qt::ItemFlag flag = Qt::NoItemFlags;//Все выбраны (?)
+    bool backgroundColorIsSet = false, foregroundColorIsSet = false;
+    QColor backgroundColor, foregroundColor;
 };
 
 #endif // QTEXTTABLEWIDGET_H

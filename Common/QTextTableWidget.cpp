@@ -37,6 +37,10 @@ void QTextTableWidget::setText(const int row, const int column, const QString &t
         cell->setTextAlignment(alignment);
     if (fontIsSet)
         cell->setFont(font);
+    if (backgroundColorIsSet)
+        cell->setBackground(QBrush(backgroundColor));
+    if (foregroundColorIsSet)
+        cell->setForeground(QBrush(foregroundColor));
 }
 
 void QTextTableWidget::setAlignment(uint16_t alignment){
@@ -53,4 +57,14 @@ void QTextTableWidget::setFlag(Qt::ItemFlag flag){
     //int old_flag = this->flag;    int add_flag = flag;
     //this->flag = static_cast<Qt::ItemFlag>(old_flag ^ add_flag);
     this->flag = flag;
+}
+
+void QTextTableWidget::setBackground(QColor color){
+    backgroundColor = color;
+    backgroundColorIsSet = true;
+}
+
+void QTextTableWidget::setForeground(QColor color){
+    foregroundColor = color;
+    foregroundColorIsSet = true;
 }

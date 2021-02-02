@@ -277,6 +277,8 @@ QVector<QVector<QString>> Fallout_Terminal::generateHackingIndexes(){
 }
 
 void Fallout_Terminal::tuneTextTableWidget(){
+    textTableWidget->setBackground(QColor(  8,  34,  21));
+    textTableWidget->setForeground(QColor( 55, 255, 137));
 
     QFont font("Consolas", 20);
     //QFont font("Consolas", 10, QFont::Monospace);
