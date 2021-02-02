@@ -49,9 +49,12 @@ Fallout_Terminal::~Fallout_Terminal(){
 }
 
 QVector<QString> Fallout_Terminal::getWordsFromDictionary(){
-    //temp
-    //Переделать под базу данных с запросами вроде
+
+    //Переделывать под базу данных с запросами вроде
     //select * from table where id>5 order by rand() limit 5;
+    //не самый хороший вариант. Читает и так быстро, а вот
+    //запись данных в базу очень долгая (несколько минут
+    //на один словарь)
 
     QFile file("litw-win.txt");
     if (!file.open(QIODevice::ReadOnly)){
@@ -62,34 +65,23 @@ QVector<QString> Fallout_Terminal::getWordsFromDictionary(){
 
     QTextStream fin(&file);
     fin.setCodec("UTF-8");//Для корректного отображения кириллицы
-    QVector<QString> wordsVector;
+    QList<QString> wordsList;//С подходящей длиной
     QString newWord;
     int freq;//temp; dictionary style
-    int curWordsCount = 0;
     while (!fin.atEnd()){
         fin>>freq>>newWord;
-        if (newWord.size()==wordsSize){
-            wordsVector.push_back(newWord.toUpper());
-            //qDebug()<<newWord;
-            curWordsCount++;
-            if (curWordsCount==wordsCount)
-                break;
+        if (newWord.size()==wordsSize && freq!=1){
+            wordsList.push_back(newWord);//.toUpper()
         }
     }
 
-    //temp!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    /*QVector<QString> wordsVector;
+    //Вместо random_shuffle
+    QVector<QString> wordsVector;
     for (int i=0; i<wordsCount; i++){
-        QString s;
-        for (int j=0; j<wordsSize; j++){
-            s.push_back("T");
-        }
-        wordsVector.push_back(s);
-    }*/
-
-    /*for (auto & word : wordsVector){
-        word = word.toUpper();
-    }*/
+        int n = effolkronium::random_static::get<int>(0, wordsList.size()-1);
+        wordsVector.push_back(wordsList[n].toUpper());
+        wordsList.removeAt(n);
+    }
 
     return wordsVector;
 }

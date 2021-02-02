@@ -60,8 +60,8 @@ private:
     int rowsCount = 17;
     int columnsCount = 2;
     int symbolsInRow = 12;
-    int wordsCount = 4*4;
-    int wordsSize = 6;
+    int wordsCount = 18;
+    int wordsSize = 7;
     int attemptsLeft, maxAttempts = 4;
     int rightRowSize = 16;//С учётом '>'; Количество символов в строке правого ряда
     int topRowsCount = 5;//Количество рядов в верхнем заголовке
@@ -79,7 +79,7 @@ private:
     //https://fallout.fandom.com/ru/wiki/Взлом_терминала
     //Уровень защиты Терминала
     //Требуется навык Наука
-    //Количество букв в пароле
+    //Количество букв в пароле - недостоверная информация из вики!
     Очень простой       15 	4
     Простой             25 	6
     Средний             50 	8
