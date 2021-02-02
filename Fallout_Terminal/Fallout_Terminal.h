@@ -5,6 +5,7 @@
 #include "../Common/QTextTableWidget.h"
 #include <QSet>
 #include <QList>//deque
+#include <QTimer>
 
 struct Word {
     QString word;
@@ -46,7 +47,8 @@ private:
     int isHint(int numInString);//returns hintNum or -1
 
     int sameCharsAsAnswer(QString s);
-    void showWarning(bool warningEnabled);
+    void showWarning(bool warningEnabled);//Включено ли мигающее предупреждение
+
 
     void wordPressed(int index, bool callFromHint);
     void hintPressed(int index);
@@ -71,6 +73,8 @@ private:
     QVector<Hint> hints;
     //SelectedCells selectedCells;
     QList<QString> rightRows;//Или же std::deque
+    QTimer * warningTimer;
+    bool warningShown;
     /*
     //https://fallout.fandom.com/ru/wiki/Взлом_терминала
     //Уровень защиты Терминала
@@ -82,6 +86,7 @@ private:
     Сложный             75 	10
     Очень сложный       100 12 */
 private slots:
+    void changeWarningState();//Предупреждение мигает
     //void tempTest();
     //void cellActivated(int row, int column);
     void cellClicked(int row, int column);

@@ -8,12 +8,16 @@
 #include <QMessageBox>
 #include <algorithm>
 
+
 #include <QDebug>
 
 Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     : QWidget(parent)
 {
     setWindowTitle("Терминал Fallout");//Название окна
+
+    warningTimer = new QTimer(this);
+    connect(warningTimer, SIGNAL(timeout()), this, SLOT(changeWarningState()));
 
     QGridLayout * mainLayout = new QGridLayout(this);
     textTableWidget = new QTextTableWidget();
@@ -26,7 +30,6 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     connect(textTableWidget, SIGNAL(cellClicked(int, int)), this, SLOT(cellClicked(int, int)));
     connect(textTableWidget, SIGNAL(cellEntered(int, int)), this, SLOT(cellEntered(int, int)));
     connect(textTableWidget, SIGNAL(cellPressed(int, int)), this, SLOT(cellPressed(int, int)));
-
 
     /*
     topTextTableWidget = new QTextTableWidget();
@@ -331,7 +334,7 @@ void Fallout_Terminal::newGame(){
             textTableWidget->setText(row, column, QString(topString[column]));
         }
     }
-    {
+    /*{
         QString topString = "ВВЕДИТЕ ПАРОЛЬ";
         int row = 1;
         int column;
@@ -341,7 +344,8 @@ void Fallout_Terminal::newGame(){
         for (; column<textTableWidget->columnCount(); column++){
             textTableWidget->setText(row, column, " ");
         }
-    }
+    }*/
+    //Всё перенесено в showWarning
     //Мигающее сообщение на второй строке обновляется функцией showWarning(bool)
     //Надпись "ВВЕДИТЕ ПАРОЛЬ" убирается после первой попытки ввода (?) - нет
     //"# ПОПЫТОК ОСТАЛОСЬ: ▮▮▮▮" - в функции setAttemptsCount(int)
@@ -483,16 +487,37 @@ int Fallout_Terminal::sameCharsAsAnswer(QString s){
 void Fallout_Terminal::showWarning(bool warningEnabled){
     int row = 1;
     if (!warningEnabled){
+        warningTimer->stop();
         QString topString = "ВВЕДИТЕ ПАРОЛЬ";
-        for (int column=0; column<textTableWidget->columnCount(); column++){
+        int column;
+        for (column=0; column<topString.size(); column++){
+            textTableWidget->setText(row, column, QString(topString[column]));
+        }
+        for (; column<textTableWidget->columnCount(); column++){
             textTableWidget->setText(row, column, " ");
         }
     } else {
+        warningShown = true;
+        changeWarningState();
+        //warningTimer->start(0);
+    }
+}
+void Fallout_Terminal::changeWarningState(){
+    int row = 1;
+    if (warningShown) {
         QString topString = "!!! ПРЕДУПРЕЖДЕНИЕ: ТЕРМИНАЛ МОЖЕТ БЫТЬ ЗАБЛОКИРОВАН !!!";
         for (int column=0; column<textTableWidget->columnCount(); column++){
             textTableWidget->setText(row, column, QString(topString[column]));
         }
+    } else {
+        for (int column=0; column<textTableWidget->columnCount(); column++){
+            textTableWidget->setText(row, column, " ");
+        }
     }
+    warningShown = !warningShown;
+    qDebug()<<"warningShown"<<warningShown;
+
+    warningTimer->start(1000);
 }
 
 void Fallout_Terminal::wordPressed(int index, bool callFromHint = false){
@@ -631,7 +656,7 @@ void Fallout_Terminal::setAttemptsCount(int attempts){
     }
 
     if (attemptsLeft == 1) showWarning(1);
-    //if (attemptsLeft == maxAttempts) showWarning(0);
+    if (attemptsLeft == maxAttempts) showWarning(0);
 
     //Как вариант - изменять падежи слова "ПОПЫТКИ". В оригинале - не меняется
 
