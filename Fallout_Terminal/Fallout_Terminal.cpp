@@ -25,24 +25,13 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     newGame();
     mainLayout->addWidget(textTableWidget, 1, 0);
 
-    connect(textTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
-    connect(textTableWidget, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(currentCellChanged(int, int, int, int)));
     connect(textTableWidget, SIGNAL(cellClicked(int, int)), this, SLOT(cellClicked(int, int)));
     connect(textTableWidget, SIGNAL(cellEntered(int, int)), this, SLOT(cellEntered(int, int)));
-    connect(textTableWidget, SIGNAL(cellPressed(int, int)), this, SLOT(cellPressed(int, int)));
-
     /*
-    topTextTableWidget = new QTextTableWidget();
-    mainLayout->addWidget(topTextTableWidget, 0, 0, 1, 2);
-
-    rightTextTableWidget = new QTextTableWidget();
-    mainLayout->addWidget(rightTextTableWidget, 1, 1);
-
-    //Заглушка для верхней и правой полос
-    tuneAnotherTableWidget(false);//right
-    tuneAnotherTableWidget(true);//top
+    connect(textTableWidget, SIGNAL(cellPressed(int, int)), this, SLOT(cellPressed(int, int)));
+    connect(textTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
+    connect(textTableWidget, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(currentCellChanged(int, int, int, int)));
     */
-
 }
 
 Fallout_Terminal::~Fallout_Terminal(){
@@ -282,8 +271,6 @@ void Fallout_Terminal::tuneTextTableWidget(){
     //QDesktopWidget *d = QApplication::desktop();
     //qDebug()<<d->width()<<d->height();//Разрешение экрана
 
-
-    //Qt::ItemFlag flag = (Qt::ItemFlag)((uint32_t)Qt::ItemIsEditable | (uint32_t)Qt::ItemIsEnabled);
     textTableWidget->setFlag(Qt::ItemIsEditable);
     textTableWidget->setAlignment(Qt::AlignCenter);
 
@@ -297,8 +284,6 @@ void Fallout_Terminal::tuneTextTableWidget(){
     for (int row=0; row<rowsCount+5; row++){
         for (int col=0; col<rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2); col++){
             textTableWidget->setText(row, col, " ");
-            //textTableWidget->horizontalHeader()->setDefaultSectionSize(1);
-            //textTableWidget->item(row, col);
         }
     }
 
@@ -310,7 +295,7 @@ void Fallout_Terminal::tuneTextTableWidget(){
     textTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     textTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     textTableWidget->resizeColumnsToContents();//textTableWidget->resizeRowsToContents();
-    int delta = 2;//Запас (в пискелях)
+    int delta = 4;//Запас (в пискелях)
     textTableWidget->setFixedSize(//textTableWidget->verticalHeader()->width() +
                                   textTableWidget->horizontalHeader()->length() + delta,
                                   //textTableWidget->horizontalHeader()->height() +
@@ -328,23 +313,13 @@ void Fallout_Terminal::newGame(){
             textTableWidget->setText(row, column, QString(topString[column]));
         }
     }
-    /*{
-        QString topString = "ВВЕДИТЕ ПАРОЛЬ";
-        int row = 1;
-        int column;
-        for (column=0; column<topString.size(); column++){
-            textTableWidget->setText(row, column, QString(topString[column]));
-        }
-        for (; column<textTableWidget->columnCount(); column++){
-            textTableWidget->setText(row, column, " ");
-        }
-    }*/
-    //Всё перенесено в showWarning
-    //Мигающее сообщение на второй строке обновляется функцией showWarning(bool)
+
+    //Вторая строка - в showWarning
     //Надпись "ВВЕДИТЕ ПАРОЛЬ" убирается после первой попытки ввода (?) - нет
+    //Мигающее сообщение на второй строке обновляется функцией showWarning(bool)
+
     //"# ПОПЫТОК ОСТАЛОСЬ: ▮▮▮▮" - в функции setAttemptsCount(int)
 
-    //right
     clearRightRows();
 
     auto hackingIndexes = generateHackingIndexes();
@@ -354,10 +329,9 @@ void Fallout_Terminal::newGame(){
             for (int k=0; k<hackingIndexes[0][0].size(); k++){//num in index
                 textTableWidget->setText(j+topRowsCount, i*(symbolsInRow+symbolsInIndex+2)+k, QString(hackingIndexes[i][j][k]));
             }
-            //textTableWidget->setText(j,i*(1+symbolsInRow),ans[i][j]);
         }
     }
-    //qDebug()<<"newGame 3";
+
     QString hackingSymbols = generateHackingSymbols();
     for (int i=0; i<hackingSymbols.size(); i++){
         auto pair = numV(i);
@@ -365,54 +339,6 @@ void Fallout_Terminal::newGame(){
     }
 
     this->setAttemptsCount(maxAttempts);
-}
-
-void Fallout_Terminal::tuneAnotherTableWidget(bool isTopWidget){
-    QTextTableWidget * textTableWidget = (isTopWidget ? topTextTableWidget : rightTextTableWidget);//temp (некрасивый ход)
-
-    QFont font("Consolas", 20);
-    font.setBold(true);
-    textTableWidget->setFont(font);
-    textTableWidget->setFlag(Qt::ItemIsEditable);
-    textTableWidget->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);//(Qt::AlignCenter);
-
-    if (isTopWidget){
-        textTableWidget->setText(0,0, "ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL");
-        textTableWidget->setText(1,0, "!!! ПРЕДУПРЕЖДЕНИЕ: ТЕРМИНАЛ МОЖЕТ БЫТЬ ЗАБЛОКИРОВАН !!!");
-        textTableWidget->setText(2,0, "");
-        textTableWidget->setText(3,0, "# ПОПЫТОК ОСТАЛОСЬ: ▮▮▮▮");
-        //textTableWidget->setText(4,0, "");
-    } else {
-        textTableWidget->setText(rowsCount-1, 0, "> fuck =_=");
-    }
-
-    textTableWidget->horizontalHeader()->hide();
-    textTableWidget->verticalHeader()->hide();
-    textTableWidget->setShowGrid(false);
-
-    textTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    textTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    textTableWidget->resizeColumnsToContents();
-    textTableWidget->resizeRowsToContents();
-
-    if (isTopWidget){
-        textTableWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
-        textTableWidget->setFixedSize(//textTableWidget->verticalHeader()->width() +
-                                      textTableWidget->horizontalHeader()->length(),
-                                      //textTableWidget->horizontalHeader()->height() +
-                                      textTableWidget->verticalHeader()->length());
-    }
-    //textTableWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-/*
-    textTableWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-    int delta = 2;//Запас (в пискелях)
-    textTableWidget->setFixedSize(//textTableWidget->verticalHeader()->width() +
-                                  textTableWidget->horizontalHeader()->length() + delta,
-                                  //textTableWidget->horizontalHeader()->height() +
-                                  textTableWidget->verticalHeader()->length() + delta);
-
-    textTableWidget->setMouseTracking(true);//[signal] void QTableWidget::cellEntered(int row, int column)*/
 }
 
 std::pair<int,int> Fallout_Terminal::numV(int numInString){
@@ -493,14 +419,13 @@ void Fallout_Terminal::showWarning(bool warningEnabled){
     } else {
         warningShown = true;
         changeWarningState();
-        //warningTimer->start(0);
     }
 }
 void Fallout_Terminal::changeWarningState(){
     int row = 1;
     if (warningShown) {
         QString topString = "!!! ПРЕДУПРЕЖДЕНИЕ: ТЕРМИНАЛ МОЖЕТ БЫТЬ ЗАБЛОКИРОВАН !!!";
-        for (int column=0; column<textTableWidget->columnCount(); column++){
+        for (int column=0; column<std::min(textTableWidget->columnCount(), topString.size()); column++){
             textTableWidget->setText(row, column, QString(topString[column]));
         }
     } else {
@@ -509,7 +434,6 @@ void Fallout_Terminal::changeWarningState(){
         }
     }
     warningShown = !warningShown;
-    qDebug()<<"warningShown"<<warningShown;
 
     warningTimer->start(1000);
 }
@@ -522,14 +446,14 @@ void Fallout_Terminal::wordPressed(int index, bool callFromHint = false){
     if (words[index].is_answer){
         qDebug()<<"Answer found";
 
-        addStringToRightRows(words[index].word);///////////////////////////////////////////////////////////////
-        addStringToRightRows("Точно!");///////////////////////////////////////////////////////////////
-        addStringToRightRows("Пожалуйста,");///////////////////////////////////////////////////////////////
-        addStringToRightRows("подождите");///////////////////////////////////////////////////////////////
-        addStringToRightRows("входа в систему");///////////////////////////////////////////////////////////////
+        addStringToRightRows(words[index].word);
+        addStringToRightRows("Точно!");
+        addStringToRightRows("Пожалуйста,");
+        addStringToRightRows("подождите");
+        addStringToRightRows("входа в систему");
 
         QMessageBox::information(this, "Hacked ;)", "Answer found");
-        newGame();//tuneTextTableWidget();
+        newGame();
 
         return;
     }
@@ -543,20 +467,18 @@ void Fallout_Terminal::wordPressed(int index, bool callFromHint = false){
     if (!callFromHint){
         setAttemptsCount(attemptsLeft-1);
 
-        addStringToRightRows(words[index].word);///////////////////////////////////////////////////////////////
-        addStringToRightRows("Отказ в доступе");///////////////////////////////////////////////////////////////
+        addStringToRightRows(words[index].word);
+        addStringToRightRows("Отказ в доступе");
         if (attemptsLeft<=0){
-            addStringToRightRows("Блокировка");///////////////////////////////////////////////////////////////
-            addStringToRightRows("начата.");///////////////////////////////////////////////////////////////
+            addStringToRightRows("Блокировка");
+            addStringToRightRows("начата.");
 
-            qDebug()<<"You lose";
             QMessageBox::information(this, "Oh no!", "Terminal blocked");
-            //this->close();
-            newGame();//tuneTextTableWidget();
+            newGame();
 
         } else {
         addStringToRightRows(QString::number(sameCharsAsAnswer(words[index].word)) +
-                             "/" + QString::number(wordsSize) + " правильно.");///////////////////////////////////////////////////////////////
+                             "/" + QString::number(wordsSize) + " правильно.");
         }
 
     } //else "Заглушка убрана" - в hintPressed
@@ -583,9 +505,9 @@ void Fallout_Terminal::hintPressed(int index){
             auto pair = numV(i);
             tempString += textTableWidget->item(pair.first, pair.second)->text();
         }
-        addStringToRightRows(tempString);///////////////////////////////////////////////////////////////
-        addStringToRightRows("Пользование");///////////////////////////////////////////////////////////////
-        addStringToRightRows("вновь разрешено");///////////////////////////////////////////////////////////////
+        addStringToRightRows(tempString);
+        addStringToRightRows("Пользование");
+        addStringToRightRows("вновь разрешено");
 
         setAttemptsCount(maxAttempts);
 
@@ -599,9 +521,9 @@ void Fallout_Terminal::hintPressed(int index){
                 auto pair = numV(i);
                 tempString += textTableWidget->item(pair.first, pair.second)->text();
             }
-            addStringToRightRows(tempString);///////////////////////////////////////////////////////////////
-            addStringToRightRows("Пользование");///////////////////////////////////////////////////////////////
-            addStringToRightRows("вновь разрешено");///////////////////////////////////////////////////////////////
+            addStringToRightRows(tempString);
+            addStringToRightRows("Пользование");
+            addStringToRightRows("вновь разрешено");
 
             setAttemptsCount(maxAttempts);
         } else {
@@ -611,11 +533,10 @@ void Fallout_Terminal::hintPressed(int index){
                 auto pair = numV(i);
                 tempString += textTableWidget->item(pair.first, pair.second)->text();
             }
-            addStringToRightRows(tempString);///////////////////////////////////////////////////////////////
-            addStringToRightRows("Заглушка убрана");///////////////////////////////////////////////////////////////
+            addStringToRightRows(tempString);
+            addStringToRightRows("Заглушка убрана");
 
             int ind = effolkronium::random_static::get<int>(0, wordsLeft-1);//Т.к. нельзя удалять ответ
-            //qDebug()<<"todo randRestore"<<ind<<wordsLeft;
 
             for (int i=0; i<words.size(); i++){
                 if (!words[i].is_answer && !words[i].is_pressed){
@@ -630,7 +551,7 @@ void Fallout_Terminal::hintPressed(int index){
 }
 
 void Fallout_Terminal::setAttemptsCount(int attempts){
-    qDebug()<<"changeAttemptsCount"<<attemptsLeft<<"->"<<attempts;
+
     attemptsLeft = attempts;
 
     {
@@ -653,29 +574,18 @@ void Fallout_Terminal::setAttemptsCount(int attempts){
     if (attemptsLeft == maxAttempts) showWarning(0);
 
     //Как вариант - изменять падежи слова "ПОПЫТКИ". В оригинале - не меняется
-
-    /*
-    //temp
-    QString titleString = "Терминал Fallout ";
-    for (int i=0; i<attemptsLeft; i++){
-        titleString += "▮";
-    }
-    setWindowTitle(titleString);//Название окна
-    */
 }
 
 void Fallout_Terminal::addStringToRightRows(QString s){
     changeSelectedStringInRightRows("");//Очистка выбранной строчки, так функция вызывается при нажатии
 
     int addedRowsCount = ceil(s.size() / (rightRowSize-1.));
-    //qDebug()<<"addStringToRightRows"<<rightRowSize<<s.size()<<addedRowsCount;
     for (int i=0; i<addedRowsCount; i++){
         rightRows.push_back('>'+s.mid(i*(rightRowSize-1), (rightRowSize-1.)));
     }
     while (rightRows.size()>rowsCount-2){
         rightRows.pop_front();//removeFirst() или removeAt(0) - тоже вариант
     }
-    //qDebug()<<rightRows;
 
     //Заполнение ячеек
     for (int i=0; i<rightRows.size(); i++){
@@ -694,6 +604,7 @@ void Fallout_Terminal::addStringToRightRows(QString s){
 
 void Fallout_Terminal::changeSelectedStringInRightRows(QString s){
     //Выбранная сейчас строчка под курсором, а именно та её часть, что влезает в одну строку
+    //Как вариант - сделать отображение слова постепенным, как в оригинале
     textTableWidget->setText(topRowsCount + rowsCount-1, columnsCount*(symbolsInRow+symbolsInIndex+2),
                              ">");
     int i;
@@ -717,7 +628,6 @@ void Fallout_Terminal::clearRightRows(){
 }
 
 void Fallout_Terminal::cellClicked(int row, int column){
-    //qDebug()<<"cellClicked"<<row<<column;
 
     //Не обрабатываем клетки с индексами, верхнюю и правую части
     if (row<topRowsCount ||
@@ -747,19 +657,16 @@ void Fallout_Terminal::cellClicked(int row, int column){
     }
 
     setAttemptsCount(attemptsLeft-1);
-    addStringToRightRows(textTableWidget->item(row, column)->text());///////////////////////////////////////////////////////////////
-    addStringToRightRows("Отказ в доступе");///////////////////////////////////////////////////////////////
+    addStringToRightRows(textTableWidget->item(row, column)->text());
+    addStringToRightRows("Отказ в доступе");
     if (attemptsLeft<=0){
-        addStringToRightRows("Блокировка");///////////////////////////////////////////////////////////////
-        addStringToRightRows("начата.");///////////////////////////////////////////////////////////////
+        addStringToRightRows("Блокировка");
+        addStringToRightRows("начата.");
 
-        qDebug()<<"You lose";
         QMessageBox::information(this, "Oh no!", "Terminal blocked");
-        //this->close();
-        newGame();//tuneTextTableWidget();
-
+        newGame();
     } else {
-        addStringToRightRows("0/" + QString::number(wordsSize) + " правильно.");///////////////////////////////////////////////////////////////
+        addStringToRightRows("0/" + QString::number(wordsSize) + " правильно.");
     }
 }
 void Fallout_Terminal::cellEntered(int row, int column){
@@ -779,8 +686,6 @@ void Fallout_Terminal::cellEntered(int row, int column){
         changeSelectedStringInRightRows("");
         return;
     }
-
-    //qDebug()<<"cellEntered"<<row<<column;
 
     //Определяем индекс слова (если выбрано)
     int wordIndex = isWord(numS(row, column));
@@ -807,31 +712,19 @@ void Fallout_Terminal::cellEntered(int row, int column){
         return;
     }
 
-    //if (column%(symbolsInRow+1)!=0){
-        textTableWidget->item(row, column)->setSelected(true);
-        changeSelectedStringInRightRows(QString(textTableWidget->item(row,column)->text()));
-    //}
+    textTableWidget->item(row, column)->setSelected(true);
+    changeSelectedStringInRightRows(QString(textTableWidget->item(row,column)->text()));
 }
+
+/*
 void Fallout_Terminal::cellPressed(int row, int column){
     //qDebug()<<"cellPressed"<<row<<column;
 }
+
 void Fallout_Terminal::itemSelectionChanged(){
-    //Убираем выделение
-    /*for (int i=0; i<columnsCount*(symbolsInRow+1); i++){
-        for (int j=0; j<rowsCount; j++){
-            textTableWidget->item(j, i)->setSelected(false);
-        }
-    }*/
     //qDebug()<<"itemSelectionChanged";
-    //!this
 }
 void Fallout_Terminal::currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn){
     //qDebug()<<"currentCellChanged"<<currentRow<<currentColumn<<previousRow<<previousColumn;
-    //this->cellEntered(currentRow, currentColumn);
-    //Убираем выделение
-    /*for (int i=0; i<columnsCount*(symbolsInRow+1); i++){
-        for (int j=0; j<rowsCount; j++){
-            textTableWidget->item(j, i)->setSelected(false);
-        }
-    }*/
 }
+*/

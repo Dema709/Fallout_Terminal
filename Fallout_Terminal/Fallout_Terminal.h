@@ -40,7 +40,6 @@ private:
     QVector<QVector<QString>> generateHackingIndexes();
     void tuneTextTableWidget(); //Первоначальная настройка таблицы
     void newGame();             //Заполнение таблицы, подсказок (и др.) и сброс попыток
-    void tuneAnotherTableWidget(bool isTopWidget);//top, right widget
     std::pair<int,int> numV(int numInString);
     int numS(int row, int column);
     int isWord(int numInString);//returns wordNum or -1
@@ -67,11 +66,8 @@ private:
     int topRowsCount = 5;//Количество рядов в верхнем заголовке
     int symbolsInIndex = 0;//Длина строки вида 0x1234. Устанавливается при генерации
     QTextTableWidget * textTableWidget;
-    QTextTableWidget * topTextTableWidget;
-    QTextTableWidget * rightTextTableWidget;
     QVector<Word> words;
     QVector<Hint> hints;
-    //SelectedCells selectedCells;
     QList<QString> rightRows;//Или же std::deque
     QTimer * warningTimer;
     bool warningShown;
@@ -87,14 +83,12 @@ private:
     Очень сложный       100 12 */
 private slots:
     void changeWarningState();//Предупреждение мигает
-    //void tempTest();
-    //void cellActivated(int row, int column);
     void cellClicked(int row, int column);
-    //void cellDoubleClicked(int row, int column);//?
     void cellEntered(int row, int column);
+    /*
     void cellPressed(int row, int column);
-    //setSelected on QTableWidgetItem
     void itemSelectionChanged();
     void currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
+    */
 };
 #endif // FALLOUT_TERMINAL_H
