@@ -203,14 +203,14 @@ QString Fallout_Terminal::generateHackingSymbols(){
     for (int i=0; i<rowsCount*columnsCount*symbolsInRow; i++){
         hackingSymbols += symbols[effolkronium::random_static::get<int>(0, symbols.size()-1)];
     }
-    qDebug()<<hackingSymbols;//Without words
+    //qDebug()<<hackingSymbols;//Without words
 
     for (int i=0; i<startIndexes.size(); i++){
         for (int j=0; j<wordsSize; j++){
             hackingSymbols[startIndexes[i]+j] = wordsVector[i][j];
         }
     }
-    qDebug()<<hackingSymbols;//With words
+    //qDebug()<<hackingSymbols;//With words
 
     //Заполнение вектора с подсказками
     hints.clear();
@@ -309,7 +309,7 @@ void Fallout_Terminal::newGame(){
     {
         QString topString = "ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL";
         int row = 0;
-        for (int column=0; column<topString.size(); column++){
+        for (int column=0; column<std::min(topString.size(), textTableWidget->columnCount()); column++){
             textTableWidget->setText(row, column, QString(topString[column]));
         }
     }
@@ -686,7 +686,6 @@ void Fallout_Terminal::cellEntered(int row, int column){
         changeSelectedStringInRightRows("");
         return;
     }
-
     //Определяем индекс слова (если выбрано)
     int wordIndex = isWord(numS(row, column));
     if (wordIndex != -1){
