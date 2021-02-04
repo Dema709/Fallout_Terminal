@@ -611,7 +611,7 @@ void Fallout_Terminal::setAttemptsCount(int attempts){
         topString.setNum(attemptsLeft);
         topString += " ПОПЫТКИ ОСТАЛОСЬ: ";
         for (int i=0; i<attemptsLeft; i++){
-            topString += "▮";
+            topString += "▊";//▊▮
         }
         int row = 3;
         for (int column=0; column<rightRowSize + columnsCount*(symbolsInRow+symbolsInIndex+2); column++){
