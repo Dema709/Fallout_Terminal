@@ -19,6 +19,8 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
 
     warningTimer = new QTimer(this);
     connect(warningTimer, SIGNAL(timeout()), this, SLOT(changeWarningState()));
+    flashingTimer = new QTimer(this);
+    connect(flashingTimer, SIGNAL(timeout()), this, SLOT(flashSelectedSymbol()));
 
     QGridLayout * mainLayout = new QGridLayout(this);
     textTableWidget = new QTextTableWidget();
@@ -289,6 +291,31 @@ void Fallout_Terminal::tuneTextTableWidget(){
 
     for (int row=0; row<rowsCount+topRowsCount; row++){
         for (int col=0; col<rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2); col++){
+/*
+            if (true){
+                int rows = rowsCount+topRowsCount;
+                int cols = rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2);
+                if (row>rows/3 && row<2*rows/3 && col>cols/3 && col<2*cols/3){
+                    qDebug()<<"center";textTableWidget->setBackground(Qt::red);
+                } else {
+                    if (row<=rows/3 && col>cols/3 && col<2*cols/3){
+                        qDebug()<<"up";textTableWidget->setBackground(Qt::white);
+                    } else
+                    if (row>=2*rows/3 && col>cols/3 && col<2*cols/3){
+                        qDebug()<<"down";textTableWidget->setBackground(Qt::gray);
+                    } else
+                    if (row>rows/3 && row<2*rows/3 && col<=cols/3){
+                        qDebug()<<"left";textTableWidget->setBackground(Qt::green);
+                    } else
+                    if (row>rows/3 && row<2*rows/3 && col>=2*cols/3){
+                        qDebug()<<"right";textTableWidget->setBackground(Qt::yellow);
+                    } else
+                        textTableWidget->setBackground(QColor(  8,  34,  21));
+                }
+                textTableWidget->setText(row, col, " ");
+                textTableWidget->backgroundColorIsSet = false;
+            } else//Выше - заглушка для проверки
+*/
             textTableWidget->setText(row, col, " ");
         }
     }
@@ -348,6 +375,8 @@ void Fallout_Terminal::newGame(){
     }
 
     this->setAttemptsCount(maxAttempts);
+
+    flashingTimer->start(1000);
 }
 
 std::pair<int,int> Fallout_Terminal::numV(int numInString){
@@ -445,6 +474,11 @@ void Fallout_Terminal::changeWarningState(){
     warningShown = !warningShown;
 
     warningTimer->start(1000);
+}
+
+void Fallout_Terminal::flashSelectedSymbol(){
+    bool isSelected = textTableWidget->item(currentRow, currentColumn)->isSelected();
+    textTableWidget->item(currentRow, currentColumn)->setSelected(!isSelected);
 }
 
 void Fallout_Terminal::wordPressed(int index, bool callFromHint = false){
@@ -736,23 +770,31 @@ void Fallout_Terminal::cellPressed(int row, int column){
     } else {
         if (row<=rows/3 && column>cols/3 && column<2*cols/3){
             qDebug()<<"up";
-            if (currentRow>0)
+            if (currentRow>0){
                 currentRow-=1;//без проверки
+                flashingTimer->start(1000);
+            }
         }
         if (row>=2*rows/3 && column>cols/3 && column<2*cols/3){
             qDebug()<<"down";
-            if (currentRow<rows-1)
+            if (currentRow<rows-1){
                 currentRow+=1;
+                flashingTimer->start(1000);
+            }
         }
         if (row>rows/3 && row<2*rows/3 && column<=cols/3){
             qDebug()<<"left";
-            if (currentColumn>0)
+            if (currentColumn>0){
                 currentColumn--;
+                flashingTimer->start(1000);
+            }
         }
         if (row>rows/3 && row<2*rows/3 && column>=2*cols/3){
             qDebug()<<"right";
-            if (currentColumn<cols-1)
+            if (currentColumn<cols-1){
                 currentColumn++;
+                flashingTimer->start(1000);
+            }
         }
         cellEntered(currentRow, currentColumn);
     }

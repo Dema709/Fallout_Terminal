@@ -48,7 +48,6 @@ private:
     int sameCharsAsAnswer(QString s);
     void showWarning(bool warningEnabled);//Включено ли мигающее предупреждение
 
-
     void wordPressed(int index, bool callFromHint);
     void hintPressed(int index);
     void setAttemptsCount(int attempts);
@@ -71,6 +70,7 @@ private:
     QList<QString> rightRows;//Или же std::deque
     QTimer * warningTimer;
     bool warningShown;
+    QTimer * flashingTimer;//Для выбранной ячейки (мигание)
     /*
     //https://fallout.fandom.com/ru/wiki/Взлом_терминала
     //Уровень защиты Терминала
@@ -84,6 +84,8 @@ private:
     int currentRow=0, currentColumn=0;
 private slots:
     void changeWarningState();//Предупреждение мигает
+    void flashSelectedSymbol();//Для выбранной ячейки (мигание)
+
     void cellClicked(int row, int column);
     void cellEntered(int row, int column);
 
