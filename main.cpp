@@ -6,6 +6,6 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     Fallout_Terminal w;
-    w.show();
+    w.showFullScreen();
     return a.exec();
 }

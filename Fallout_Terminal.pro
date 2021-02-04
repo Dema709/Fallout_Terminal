@@ -31,7 +31,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     res.qrc
 
-ANDROID_ABIS = arm64-v8a
+ANDROID_ABIS = armeabi-v7a arm64-v8a x86 x86_64
 
 QT += androidextras
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
