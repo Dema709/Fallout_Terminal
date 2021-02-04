@@ -24,6 +24,15 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 #Работает при добавлении для сборки параметра make: install
-install_it.path = $$OUT_PWD
-install_it.files = Fallout_Terminal/litw-win.txt
-INSTALLS += install_it
+#install_it.path = $$OUT_PWD
+#install_it.files = Fallout_Terminal/litw-win.txt
+#INSTALLS += install_it
+
+RESOURCES += \
+    res.qrc
+
+ANDROID_ABIS = arm64-v8a
+
+QT += androidextras
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+OTHER_FILES += android/AndroidManifest.xml

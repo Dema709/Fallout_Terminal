@@ -81,14 +81,16 @@ private:
     Средний             50 	8
     Сложный             75 	10
     Очень сложный       100 12 */
+    int currentRow=0, currentColumn=0;
 private slots:
     void changeWarningState();//Предупреждение мигает
     void cellClicked(int row, int column);
     void cellEntered(int row, int column);
-    /*
+
     void cellPressed(int row, int column);
+    void cellDoubleClicked(int row, int column);
     void itemSelectionChanged();
     void currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
-    */
+
 };
 #endif // FALLOUT_TERMINAL_H

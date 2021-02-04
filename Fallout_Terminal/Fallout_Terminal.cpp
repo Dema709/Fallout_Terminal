@@ -7,7 +7,8 @@
 #include <QFile>
 #include <QMessageBox>
 #include <algorithm>
-
+#include <QDesktopWidget>
+#include <QApplication>
 
 #include <QDebug>
 
@@ -25,13 +26,16 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     newGame();
     mainLayout->addWidget(textTableWidget, 1, 0);
 
-    connect(textTableWidget, SIGNAL(cellClicked(int, int)), this, SLOT(cellClicked(int, int)));
-    connect(textTableWidget, SIGNAL(cellEntered(int, int)), this, SLOT(cellEntered(int, int)));
-    /*
+    //connect(textTableWidget, SIGNAL(cellClicked(int, int)), this, SLOT(cellClicked(int, int)));
+    //connect(textTableWidget, SIGNAL(cellEntered(int, int)), this, SLOT(cellEntered(int, int)));
+
     connect(textTableWidget, SIGNAL(cellPressed(int, int)), this, SLOT(cellPressed(int, int)));
-    connect(textTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
-    connect(textTableWidget, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(currentCellChanged(int, int, int, int)));
-    */
+    //connect(textTableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(cellDoubleClicked(int, int)));
+    //connect(textTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
+    //connect(textTableWidget, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(currentCellChanged(int, int, int, int)));
+
+
+    mainLayout->setContentsMargins(0,0,0,0);
 }
 
 Fallout_Terminal::~Fallout_Terminal(){
@@ -45,7 +49,7 @@ QVector<QString> Fallout_Terminal::getWordsFromDictionary(){
     //запись данных в базу очень долгая (несколько минут
     //на один словарь)
 
-    QFile file("litw-win.txt");
+    QFile file(":/data/Fallout_Terminal/litw-win.txt");
     if (!file.open(QIODevice::ReadOnly)){
         QString errorMessage = "Fallout_Terminal::getWordsFromDictionary() cannot open file";
         QMessageBox::critical(this, "Error", errorMessage);
@@ -258,30 +262,32 @@ QVector<QVector<QString>> Fallout_Terminal::generateHackingIndexes(){
 }
 
 void Fallout_Terminal::tuneTextTableWidget(){
+    //font.setPixelSize(20);//Для работы с разными разрешениями?
+    QDesktopWidget *d = QApplication::desktop();
+    qDebug()<<"ScreenDimensions"<<d->width()<<d->height();//Разрешение экрана
+
     textTableWidget->setBackground(QColor(  8,  34,  21));
     textTableWidget->setForeground(QColor( 55, 255, 137));
 
-    QFont font("Consolas", 20);
+    QFont font("Consolas", 15);
     //QFont font("Consolas", 10, QFont::Monospace);
     font.setBold(true);
     textTableWidget->setFont(font);
-
-
-    //font.setPixelSize(20);//Для работы с разными разрешениями?
-    //QDesktopWidget *d = QApplication::desktop();
-    //qDebug()<<d->width()<<d->height();//Разрешение экрана
 
     textTableWidget->setFlag(Qt::ItemIsEditable);
     textTableWidget->setAlignment(Qt::AlignCenter);
 
     auto hackingIndexes = generateHackingIndexes();
 
-    textTableWidget->horizontalHeader()->setMaximumSectionSize(15);
-    textTableWidget->verticalHeader()  ->setMaximumSectionSize(28);
-    //textTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);//Сильно замедляет заполнение
-    //textTableWidget->verticalHeader()  ->setSectionResizeMode(QHeaderView::ResizeToContents);//Без этого не уменьшалось
+    textTableWidget->horizontalHeader()->setMinimumSectionSize(0);
+    textTableWidget->verticalHeader()  ->setMinimumSectionSize(0);
+    //textTableWidget->horizontalHeader()->setMinimumSectionSize(d->width()/((rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2))));
+    //textTableWidget->verticalHeader()  ->setMaximumSectionSize(d->height()/(rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2)));//(28);
+    //textTableWidget->verticalHeader()  ->setMinimumSectionSize(d->height()/(rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2)));//(28);
+    textTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);//Сильно замедляет заполнение
+    textTableWidget->verticalHeader()  ->setSectionResizeMode(QHeaderView::Stretch);//Без этого не уменьшалось
 
-    for (int row=0; row<rowsCount+5; row++){
+    for (int row=0; row<rowsCount+topRowsCount; row++){
         for (int col=0; col<rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2); col++){
             textTableWidget->setText(row, col, " ");
         }
@@ -291,17 +297,20 @@ void Fallout_Terminal::tuneTextTableWidget(){
     textTableWidget->verticalHeader()->hide();
     textTableWidget->setShowGrid(false);
 
-    textTableWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    textTableWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     textTableWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     textTableWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    textTableWidget->resizeColumnsToContents();//textTableWidget->resizeRowsToContents();
+    //textTableWidget->resizeColumnsToContents();textTableWidget->resizeRowsToContents();
     int delta = 4;//Запас (в пискелях)
-    textTableWidget->setFixedSize(//textTableWidget->verticalHeader()->width() +
+    //textTableWidget->setFixedWidth(d->width());
+    //textTableWidget->setFixedHeight(d->height());
+    /*textTableWidget->setFixedSize(//textTableWidget->verticalHeader()->width() +
                                   textTableWidget->horizontalHeader()->length() + delta,
                                   //textTableWidget->horizontalHeader()->height() +
-                                  textTableWidget->verticalHeader()->length() + delta);
+                                  textTableWidget->verticalHeader()->length() + delta);*/
 
     textTableWidget->setMouseTracking(true);//[signal] void QTableWidget::cellEntered(int row, int column)
+    textTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
 }
 
 void Fallout_Terminal::newGame(){
@@ -715,15 +724,58 @@ void Fallout_Terminal::cellEntered(int row, int column){
     changeSelectedStringInRightRows(QString(textTableWidget->item(row,column)->text()));
 }
 
-/*
+
 void Fallout_Terminal::cellPressed(int row, int column){
     //qDebug()<<"cellPressed"<<row<<column;
+    int rows = textTableWidget->rowCount();
+    int cols = textTableWidget->columnCount();
+    qDebug()<<rows<<cols<<";"<<row<<column;
+    if (row>rows/3 && row<2*rows/3 && column>cols/3 && column<2*cols/3){
+        qDebug()<<"center";
+        cellClicked(currentRow, currentColumn);
+    } else {
+        if (row<=rows/3 && column>cols/3 && column<2*cols/3){
+            qDebug()<<"up";
+            if (currentRow>0)
+                currentRow-=1;//без проверки
+        }
+        if (row>=2*rows/3 && column>cols/3 && column<2*cols/3){
+            qDebug()<<"down";
+            if (currentRow<rows-1)
+                currentRow+=1;
+        }
+        if (row>rows/3 && row<2*rows/3 && column<=cols/3){
+            qDebug()<<"left";
+            if (currentColumn>0)
+                currentColumn--;
+        }
+        if (row>rows/3 && row<2*rows/3 && column>=2*cols/3){
+            qDebug()<<"right";
+            if (currentColumn<cols-1)
+                currentColumn++;
+        }
+        cellEntered(currentRow, currentColumn);
+    }
+
+    //this->currentRow    = row;
+    //this->currentColumn = column;
+
+    textTableWidget->item(currentRow, currentColumn)->setSelected(true);
+}
+
+void Fallout_Terminal::cellDoubleClicked(int row, int column){
+    //qDebug()<<"cellDoubleClicked"<<row<<column;
 }
 
 void Fallout_Terminal::itemSelectionChanged(){
+    //cellEntered(currentRow, currentColumn);
     //qDebug()<<"itemSelectionChanged";
 }
 void Fallout_Terminal::currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn){
     //qDebug()<<"currentCellChanged"<<currentRow<<currentColumn<<previousRow<<previousColumn;
+    //this->currentRow    = currentRow;
+    //this->currentColumn = currentColumn;
+
+//    cellEntered(currentRow, currentColumn);
 }
-*/
+
