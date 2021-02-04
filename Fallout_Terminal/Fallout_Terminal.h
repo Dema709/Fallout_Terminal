@@ -25,6 +25,14 @@ struct SelectedCells {
     bool is_selected;
 };
 
+enum TapDirection{
+    center,
+    top,
+    bottom,
+    left,
+    right
+};
+
 class Fallout_Terminal : public QWidget
 {
     Q_OBJECT
@@ -54,6 +62,8 @@ private:
     void addStringToRightRows(QString s);
     void changeSelectedStringInRightRows(QString s);
     void clearRightRows();
+
+    TapDirection getTapDirection(int rowTapped, int columnTapped);
 
     int rowsCount = 17;
     int columnsCount = 2;

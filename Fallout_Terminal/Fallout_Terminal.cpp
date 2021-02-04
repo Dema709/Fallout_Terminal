@@ -289,33 +289,37 @@ void Fallout_Terminal::tuneTextTableWidget(){
     textTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);//Сильно замедляет заполнение
     textTableWidget->verticalHeader()  ->setSectionResizeMode(QHeaderView::Stretch);//Без этого не уменьшалось
 
+    textTableWidget->setRowCount(rowsCount+topRowsCount);
+    textTableWidget->setColumnCount(rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2));
     for (int row=0; row<rowsCount+topRowsCount; row++){
         for (int col=0; col<rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2); col++){
-/*
-            if (true){
-                int rows = rowsCount+topRowsCount;
-                int cols = rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2);
-                if (row>rows/3 && row<2*rows/3 && col>cols/3 && col<2*cols/3){
-                    qDebug()<<"center";textTableWidget->setBackground(Qt::red);
-                } else {
-                    if (row<=rows/3 && col>cols/3 && col<2*cols/3){
-                        qDebug()<<"up";textTableWidget->setBackground(Qt::white);
-                    } else
-                    if (row>=2*rows/3 && col>cols/3 && col<2*cols/3){
-                        qDebug()<<"down";textTableWidget->setBackground(Qt::gray);
-                    } else
-                    if (row>rows/3 && row<2*rows/3 && col<=cols/3){
-                        qDebug()<<"left";textTableWidget->setBackground(Qt::green);
-                    } else
-                    if (row>rows/3 && row<2*rows/3 && col>=2*cols/3){
-                        qDebug()<<"right";textTableWidget->setBackground(Qt::yellow);
-                    } else
-                        textTableWidget->setBackground(QColor(  8,  34,  21));
+
+            /*if (true){//Заглушка для проверки //temp
+                TapDirection w = getTapDirection(row, col);
+                switch (w) {
+                    case TapDirection::top:
+                        textTableWidget->setBackground(Qt::yellow);
+                        break;
+                    case TapDirection::bottom:
+                        textTableWidget->setBackground(Qt::red);
+                        break;
+                    case TapDirection::left:
+                        textTableWidget->setBackground(Qt::gray);
+                        break;
+                    case TapDirection::right:
+                        textTableWidget->setBackground(Qt::green);
+                        break;
+                    case TapDirection::center:
+                        textTableWidget->setBackground(Qt::white);
+                        break;
+                    default:
+                        qDebug()<<"wut? case default";
+                        break;
                 }
                 textTableWidget->setText(row, col, " ");
                 textTableWidget->backgroundColorIsSet = false;
             } else//Выше - заглушка для проверки
-*/
+            */
             textTableWidget->setText(row, col, " ");
         }
     }
@@ -375,6 +379,10 @@ void Fallout_Terminal::newGame(){
     }
 
     this->setAttemptsCount(maxAttempts);
+
+    auto pair = numV(0);
+    currentRow = pair.first; currentColumn = pair.second;
+    cellEntered(currentRow, currentColumn);
 
     flashingTimer->start(1000);
 }
@@ -459,6 +467,7 @@ void Fallout_Terminal::showWarning(bool warningEnabled){
         changeWarningState();
     }
 }
+
 void Fallout_Terminal::changeWarningState(){
     int row = 1;
     if (warningShown) {
@@ -487,7 +496,7 @@ void Fallout_Terminal::wordPressed(int index, bool callFromHint = false){
     words[index].is_pressed = true;
 
     if (words[index].is_answer){
-        qDebug()<<"Answer found";
+        //qDebug()<<"Answer found";
 
         addStringToRightRows(words[index].word);
         addStringToRightRows("Точно!");
@@ -670,6 +679,51 @@ void Fallout_Terminal::clearRightRows(){
     }
 }
 
+TapDirection Fallout_Terminal::getTapDirection(int rowTapped, int columnTapped){
+    int rows = textTableWidget->rowCount();
+    int cols = textTableWidget->columnCount();
+
+    double gamma = static_cast<double>(rows)/cols;//Коэффициент наклона
+    double centerKoeff = 0.4;//Часть экрана, отвечающая за нажатие по центру
+    centerKoeff = (1-centerKoeff)/2;
+
+    //Деление за вычетом центра на 4 части за 2 проверки
+    //не очень в плане отображения и мелких деталей в углу
+
+    //Проверка левой стороны
+    if (columnTapped<=cols*centerKoeff){
+        if (rowTapped < columnTapped*gamma){
+            return TapDirection::top;
+        }
+        rowTapped = rows - 1 - rowTapped;
+        if (rowTapped < columnTapped*gamma){
+            return TapDirection::bottom;
+        }
+        return TapDirection::left;
+    }
+
+    //Проверка правой стороны
+    columnTapped = cols - 1 - columnTapped;
+    if (columnTapped<=cols*centerKoeff){
+        if (rowTapped < columnTapped*gamma){
+            return TapDirection::top;
+        }
+        rowTapped = rows - 1 - rowTapped;
+        if (rowTapped < columnTapped*gamma){
+            return TapDirection::bottom;
+        }
+        return TapDirection::right;
+    }
+
+    //Проверка центра
+    if (rowTapped<=rows*centerKoeff)
+        return TapDirection::top;
+    rowTapped = rows - 1 - rowTapped;
+    if (rowTapped<=rows*centerKoeff)
+        return TapDirection::bottom;
+    return TapDirection::center;
+}
+
 void Fallout_Terminal::cellClicked(int row, int column){
 
     //Не обрабатываем клетки с индексами, верхнюю и правую части
@@ -760,47 +814,38 @@ void Fallout_Terminal::cellEntered(int row, int column){
 
 
 void Fallout_Terminal::cellPressed(int row, int column){
-    //qDebug()<<"cellPressed"<<row<<column;
     int rows = textTableWidget->rowCount();
     int cols = textTableWidget->columnCount();
-    qDebug()<<rows<<cols<<";"<<row<<column;
-    if (row>rows/3 && row<2*rows/3 && column>cols/3 && column<2*cols/3){
-        qDebug()<<"center";
+
+    TapDirection w = getTapDirection(row, column);
+    if (w==TapDirection::center){
         cellClicked(currentRow, currentColumn);
     } else {
-        if (row<=rows/3 && column>cols/3 && column<2*cols/3){
-            qDebug()<<"up";
-            if (currentRow>0){
-                currentRow-=1;//без проверки
-                flashingTimer->start(1000);
-            }
+        switch (w) {
+            case TapDirection::top:
+                if (currentRow>0){
+                    currentRow-=1;
+                }
+                break;
+            case TapDirection::bottom:
+                if (currentRow<rows-1){
+                    currentRow+=1;
+                }
+                break;
+            case TapDirection::left:
+                if (currentColumn>0){
+                    currentColumn--;
+                }
+                break;
+            case TapDirection::right:
+                if (currentColumn<cols-1){
+                    currentColumn++;
+                }
+                break;
         }
-        if (row>=2*rows/3 && column>cols/3 && column<2*cols/3){
-            qDebug()<<"down";
-            if (currentRow<rows-1){
-                currentRow+=1;
-                flashingTimer->start(1000);
-            }
-        }
-        if (row>rows/3 && row<2*rows/3 && column<=cols/3){
-            qDebug()<<"left";
-            if (currentColumn>0){
-                currentColumn--;
-                flashingTimer->start(1000);
-            }
-        }
-        if (row>rows/3 && row<2*rows/3 && column>=2*cols/3){
-            qDebug()<<"right";
-            if (currentColumn<cols-1){
-                currentColumn++;
-                flashingTimer->start(1000);
-            }
-        }
+        flashingTimer->start(1000);
         cellEntered(currentRow, currentColumn);
     }
-
-    //this->currentRow    = row;
-    //this->currentColumn = column;
 
     textTableWidget->item(currentRow, currentColumn)->setSelected(true);
 }
