@@ -32,6 +32,7 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     connect(textTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(itemSelectionChanged()));
     connect(textTableWidget, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(currentCellChanged(int, int, int, int)));
     */
+    mainLayout->setContentsMargins(0,0,0,0);
 }
 
 Fallout_Terminal::~Fallout_Terminal(){
@@ -281,7 +282,7 @@ void Fallout_Terminal::tuneTextTableWidget(){
     //textTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);//Сильно замедляет заполнение
     //textTableWidget->verticalHeader()  ->setSectionResizeMode(QHeaderView::ResizeToContents);//Без этого не уменьшалось
 
-    for (int row=0; row<rowsCount+5; row++){
+    for (int row=0; row<rowsCount+topRowsCount; row++){
         for (int col=0; col<rightRowSize + columnsCount*(symbolsInRow+hackingIndexes[0][0].size()+2); col++){
             textTableWidget->setText(row, col, " ");
         }
@@ -302,6 +303,7 @@ void Fallout_Terminal::tuneTextTableWidget(){
                                   textTableWidget->verticalHeader()->length() + delta);
 
     textTableWidget->setMouseTracking(true);//[signal] void QTableWidget::cellEntered(int row, int column)
+    textTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
 }
 
 void Fallout_Terminal::newGame(){
@@ -339,6 +341,13 @@ void Fallout_Terminal::newGame(){
     }
 
     this->setAttemptsCount(maxAttempts);
+
+    //Убираем выделение
+    for (int i=0; i<textTableWidget->columnCount(); i++){
+        for (int j=0; j<textTableWidget->rowCount(); j++){
+            textTableWidget->item(j, i)->setSelected(false);
+        }
+    }
 }
 
 std::pair<int,int> Fallout_Terminal::numV(int numInString){
