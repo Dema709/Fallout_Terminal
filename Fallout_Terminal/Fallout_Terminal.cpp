@@ -25,7 +25,7 @@ Fallout_Terminal::Fallout_Terminal(QWidget *parent)
     QGridLayout * mainLayout = new QGridLayout(this);
     textTableWidget = new QTextTableWidget();
     tuneTextTableWidget();
-    newGame();
+    newGame(true);//initializing tutorial
     mainLayout->addWidget(textTableWidget, 1, 0);
 
     //connect(textTableWidget, SIGNAL(cellClicked(int, int)), this, SLOT(cellClicked(int, int)));
@@ -264,16 +264,16 @@ QVector<QVector<QString>> Fallout_Terminal::generateHackingIndexes(){
 }
 
 void Fallout_Terminal::tuneTextTableWidget(){
-    //font.setPixelSize(20);//Для работы с разными разрешениями?
     QDesktopWidget *d = QApplication::desktop();
     qDebug()<<"ScreenDimensions"<<d->width()<<d->height();//Разрешение экрана
 
     textTableWidget->setBackground(QColor(  8,  34,  21));
     textTableWidget->setForeground(QColor( 55, 255, 137));
 
-    QFont font("Consolas", 15);
+    QFont font("Consolas", 14);
     //QFont font("Consolas", 10, QFont::Monospace);
     font.setBold(true);
+    //font.setPixelSize(20);//Для работы с разными разрешениями?
     textTableWidget->setFont(font);
 
     textTableWidget->setFlag(Qt::ItemIsEditable);
@@ -344,7 +344,79 @@ void Fallout_Terminal::tuneTextTableWidget(){
     textTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
 }
 
-void Fallout_Terminal::newGame(){
+void Fallout_Terminal::newGame(bool isTutorialInit){//isTutorialInit = false by default
+    if (isTutorialInit){
+        for (int rowClear=0; rowClear<textTableWidget->rowCount(); rowClear++){
+            for (int colClear=0; colClear<textTableWidget->columnCount(); colClear++){
+                TapDirection w = getTapDirection(rowClear, colClear);
+                QString arrow;
+                switch (w) {
+                    case TapDirection::top:
+                        arrow = "↑";
+                        break;
+                    case TapDirection::bottom:
+                        arrow = "↑";
+                        break;
+                    case TapDirection::left:
+                        arrow = "←";
+                        break;
+                    case TapDirection::right:
+                        arrow = "→";
+                        break;
+                    default:
+                        //do nothing
+                        break;
+                }
+                textTableWidget->item(rowClear, colClear)->setText(arrow);
+            }
+        }
+
+        {
+            QString tutorialString = "Fallout Terminal";
+            int tutRow = textTableWidget->rowCount()/2-3;
+            int tutCol = textTableWidget->columnCount()/2 - tutorialString.size()/2;
+            for (int i=0; i<tutorialString.size(); i++){
+                textTableWidget->item(tutRow, tutCol+i)->setText(QString(tutorialString[i]));
+            }
+
+            tutorialString = "Управление курсором";
+            tutRow += 2;
+            tutCol = textTableWidget->columnCount()/2 - tutorialString.size()/2;
+            for (int i=0; i<tutorialString.size(); i++){
+                textTableWidget->item(tutRow, tutCol+i)->setText(QString(tutorialString[i]));
+            }
+
+            tutorialString = "по стрелочкам";
+            tutRow += 1;
+            tutCol = textTableWidget->columnCount()/2 - tutorialString.size()/2;
+            for (int i=0; i<tutorialString.size(); i++){
+                textTableWidget->item(tutRow, tutCol+i)->setText(QString(tutorialString[i]));
+            }
+
+            tutorialString = "Центр - для выбора";
+            tutRow += 2;
+            tutCol = textTableWidget->columnCount()/2 - tutorialString.size()/2;
+            for (int i=0; i<tutorialString.size(); i++){
+                textTableWidget->item(tutRow, tutCol+i)->setText(QString(tutorialString[i]));
+            }
+
+        }
+
+        return;
+    } else if(isTutorial) {
+        isTutorial = false;
+        //Обучение было открыто, но теперь должно закрыться
+        //Очистка экрана
+        for (int rowClear=0; rowClear<textTableWidget->rowCount(); rowClear++){
+            for (int colClear=0; colClear<textTableWidget->columnCount(); colClear++){
+                qDebug()<<rowClear<<colClear;
+                textTableWidget->item(rowClear, colClear)->setText(" ");
+            }
+        }
+    }
+
+
+
     //top
     {
         QString topString = "ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL";
@@ -726,6 +798,8 @@ TapDirection Fallout_Terminal::getTapDirection(int rowTapped, int columnTapped){
 
 void Fallout_Terminal::cellClicked(int row, int column){
 
+
+
     //Не обрабатываем клетки с индексами, верхнюю и правую части
     if (row<topRowsCount ||
             column>(symbolsInRow+symbolsInIndex+2)*columnsCount-2 ||
@@ -814,6 +888,11 @@ void Fallout_Terminal::cellEntered(int row, int column){
 
 
 void Fallout_Terminal::cellPressed(int row, int column){
+
+    if (isTutorial){
+        newGame();
+    }
+
     int rows = textTableWidget->rowCount();
     int cols = textTableWidget->columnCount();
 

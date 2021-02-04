@@ -47,7 +47,7 @@ private:
     QString generateHackingSymbols();
     QVector<QVector<QString>> generateHackingIndexes();
     void tuneTextTableWidget(); //Первоначальная настройка таблицы
-    void newGame();             //Заполнение таблицы, подсказок (и др.) и сброс попыток
+    void newGame(bool isTutorialInit = false);             //Заполнение таблицы, подсказок (и др.) и сброс попыток
     std::pair<int,int> numV(int numInString);
     int numS(int row, int column);
     int isWord(int numInString);//returns wordNum or -1
@@ -81,6 +81,7 @@ private:
     QTimer * warningTimer;
     bool warningShown;
     QTimer * flashingTimer;//Для выбранной ячейки (мигание)
+    bool isTutorial = true;
     /*
     //https://fallout.fandom.com/ru/wiki/Взлом_терминала
     //Уровень защиты Терминала
