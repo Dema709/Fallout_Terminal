@@ -3,7 +3,9 @@ Style - New Vegas, language - ru
 
 # Standalone .exe
 Fallout_Terminal.exe
+libgcc_s_seh-1.dll
 libstdc++-6.dll
+libwinpthread-1.dll
 litw-win.txt
 Qt5Core.dll
 Qt5Gui.dll
