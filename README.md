@@ -1,6 +1,8 @@
 # Fallout Terminal
 Style - New Vegas, language - ru
 
+![image](https://user-images.githubusercontent.com/72192430/162405028-67d2c40d-4251-4ff3-95bb-5ce2590d2ad5.png)
+
 # Standalone .exe
 Fallout_Terminal.exe
 libgcc_s_seh-1.dll
